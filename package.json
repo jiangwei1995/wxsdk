@@ -1,0 +1,30 @@
+{
+  "name": "tencent-wx-sdk",
+  "version": "1.0.0",
+  "description": "微信 公众号 接口封装",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiangwei1995/wxsdk.git"
+  },
+  "author": "jw872505975@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jiangwei1995/wxsdk/issues"
+  },
+  "homepage": "https://github.com/jiangwei1995/wxsdk#readme",
+  "dependencies": {
+    "ioredis": "^4.17.3",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.5",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
+    "power-assert": "^1.6.1"
+  }
+}
