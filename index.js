@@ -7,4 +7,5 @@
 * Copyright (c) 2020 (jw872505975@gmail.com). All rights reserved.
 */
 const Gzh = require("./lib/gzh");
-module.exports = { Gzh }
+const {checkSignature} = require("./lib/encrypt");
+module.exports = { Gzh, checkSignature }
