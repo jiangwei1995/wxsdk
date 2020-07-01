@@ -4,7 +4,7 @@
   "description": "微信 公众号 接口封装",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "source env_test.sh && mocha"
   },
   "repository": {
     "type": "git",
