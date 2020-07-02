@@ -5,4 +5,5 @@
 const Gzh = require("./lib/gzh");
 const { checkSignature } = require("./lib/encrypt");
 const { ReceiveText } = require("./lib/message/receive-text");
-module.exports = { Gzh, checkSignature, ReceiveText }
+const Menu = require("./lib/menu");
+module.exports = { Gzh, checkSignature, Menu }
