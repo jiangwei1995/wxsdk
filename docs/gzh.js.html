@@ -1,14 +1,55 @@
-// Created by jiangwei on 2020/06/30 .
-// Copyright (c) 2020 (jw872505975@gmail.com). All rights reserved.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>gzh.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#BaseMessage">BaseMessage</a></li><li><a href="ReceiveImage.html">ReceiveImage</a></li><li><a href="ReceiveText.html">ReceiveText</a></li><li><a href="ReceiveVoice.html">ReceiveVoice</a></li></ul><h3>Global</h3><ul><li><a href="global.html#checkSignature">checkSignature</a></li><li><a href="global.html#encrypt">encrypt</a></li><li><a href="global.html#md5">md5</a></li><li><a href="global.html#rp">rp</a></li><li><a href="global.html#sha1">sha1</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">gzh.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Created by jiangwei on 2020/06/30 .
+* Copyright (c) 2020 (jw872505975@gmail.com). All rights reserved.
+*/
 
 const rp = require("request-promise");
 const Redis = require("ioredis");
 const encrypt = require("./encrypt");
-/**
- * 微信公众号接口封装类
- * @description 微信公众号接口封装类ALL
- * {@link https://github.com GitHub}.
- */
 class Gzh {
     constructor(appid, secret, redisOption, prefix = "wx:gzh", host = "https://api.weixin.qq.com") {
         if (!appid) {
@@ -20,9 +61,8 @@ class Gzh {
         this.appid = appid;
         this.secret = secret;
         this.host = host;
+        this.expires_in = 7000; // 秒
         this.prefix = prefix;
-        this.access_token_key = `${this.prefix}:access_token:${this.appid}`;
-        this.jsapi_ticket_key = `${this.prefix}:jsapi_ticket:${this.appid}`;
         // {
         //     port: 6379, // Redis port
         //     host: "127.0.0.1", // Redis host
@@ -37,11 +77,13 @@ class Gzh {
         });
     }
     async access_token(grant_type = "client_credential") {
-        // https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
-        let access_token;
-        const cache = await this.redisClient.get(this.access_token_key);
+        // https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&amp;appid=APPID&amp;secret=APPSECRET
+        let result = {};
+        const cacheKey = `${this.prefix}:access_token:${this.appid}`;
+        const cache = await this.redisClient.get(cacheKey);
+        console.log(cache);
         if (cache) {
-            access_token = cache;
+            result.access_token = cache;
         } else {
             const options = {
                 uri: `${this.host}/cgi-bin/token`,
@@ -53,16 +95,14 @@ class Gzh {
                 json: true
             };
             const body = await rp(options);
-            access_token = body.access_token;
-            await this.redisClient.set(cacheKey, body.access_token, "EX", body.expires_in);
+            result.access_token = body.access_token;
+            result.expires_in = body.expires_in;
+            await this.redisClient.set(cacheKey, body.access_token, "EX", this.expires_in);
         }
-        if(!access_token) {
-            throw new Error(`access_token 获取失败`);
-        }
-        return access_token;
+        return result;
     }
 
-    // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi
+    // https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&amp;type=jsapi
     // {
     //     "errcode":0,
     //     "errmsg":"ok",
@@ -70,33 +110,32 @@ class Gzh {
     //     "expires_in":7200
     //   }
     async jsapi_ticket() {
-        let ticket;
-        const cache = await this.redisClient.get(this.jsapi_ticket_key);
+        const cacheKey = `${this.prefix}:jsapi_ticket:${this.appid}`;
+        const cache = await this.redisClient.get(cacheKey);
+        let result = {};
         if (cache) {
-            ticket = cache;
+            result.ticket = cache;
         } else {
-            const access_token = await this.access_token();
+            const { access_token } = await this.access_token();
             const options = {
                 uri: `${this.host}/cgi-bin/ticket/getticket`,
                 qs: {
-                    // access_token=ACCESS_TOKEN&type=jsapi
+                    // access_token=ACCESS_TOKEN&amp;type=jsapi
                     access_token: access_token,
                     type: "jsapi"
                 },
                 json: true
             };
             const body = await rp(options);
-            if (body.errcode === 0 && body.errmsg === "ok") {
-                ticket = body.ticket;
-                await this.redisClient.set(cacheKey, body.ticket, "EX", body.expires_in);
+            if (body.errcode === 0 &amp;&amp; body.errmsg === "ok") {
+                result.ticket = body.ticket;
+                result.expires_in = body.expires_in;
+                await this.redisClient.set(cacheKey, body.ticket, "EX", this.expires_in);
             } else {
                 result = body;
             }
         }
-        if(!ticket) {
-            throw new Error(`ticket 获取失败`);
-        }
-        return ticket;
+        return result;
     }
     /**
      * 发送客服消息
@@ -194,4 +233,28 @@ class Gzh {
         return encrypt.checkSignature(timestamp, nonce, token);
     }
 }
-module.exports = Gzh;
+module.exports = Gzh;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 02 2020 11:26:15 GMT+0800 (GMT+08:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

@@ -4,7 +4,8 @@
   "description": "微信 公众号 接口封装",
   "main": "index.js",
   "scripts": {
-    "test": "source env_test.sh && mocha"
+    "test": "source env_test.sh && mocha",
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,10 @@
     "request-promise": "^4.2.5"
   },
   "devDependencies": {
+    "docdash": "^1.2.0",
     "istanbul": "^0.4.5",
+    "jsdoc-to-markdown": "^6.0.1",
+    "jsdocs": "^1.0.0",
     "mocha": "^8.0.1",
     "nyc": "^15.1.0",
     "power-assert": "^1.6.1"
