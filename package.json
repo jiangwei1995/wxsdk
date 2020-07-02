@@ -1,6 +1,6 @@
 {
   "name": "tencent-wx-sdk",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "微信 公众号 接口封装",
   "main": "index.js",
   "scripts": {
